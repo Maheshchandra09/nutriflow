@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: nutriflow-api
+  datasource:
+    url: ${POSTGRES_URL:jdbc:postgresql://localhost:5432/nutriflow}
+    username: ${POSTGRES_USER:nutriflow}
+    password: ${POSTGRES_PASSWORD:nutriflow}
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017/nutriflow}
+  graphql:
+    graphiql:
+      enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+

@@ -1,0 +1,11 @@
+target/
+.mvn/repository/
+.idea/
+.vscode/
+*.iml
+.env
+.DS_Store
+technical_decisions.md
+TECHNICAL_PLAN.md
+.agents/
+Nutrispace_Spec.docx

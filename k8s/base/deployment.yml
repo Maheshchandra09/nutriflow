@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nutriflow-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nutriflow-api
+  template:
+    metadata:
+      labels:
+        app: nutriflow-api
+    spec:
+      containers:
+        - name: api
+          image: nutriflow-api:local
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: nutriflow-api
+            - secretRef:
+                name: nutriflow-api-secrets
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+
