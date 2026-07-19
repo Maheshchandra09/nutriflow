@@ -1,4 +1,277 @@
+scalar JSON
+scalar Date
+  @specifiedBy(url: "https://scalars.graphql.org/andimarek/local-date.html")
+scalar DateTime
+  @specifiedBy(url: "https://scalars.graphql.org/andimarek/date-time.html")
+
 type Query {
   status: String!
+  recipe(id: ID!): Recipe
+  searchRecipes(input: RecipeSearchInput): [Recipe!]!
+  mealPlan(id: ID!): MealPlan
+  clientDashboard(clientId: ID!): ClientDashboard!
 }
 
+type Mutation {
+  createUser(input: CreateUserInput!): User!
+  createSubscription(input: CreateSubscriptionInput!): Subscription!
+  setNutritionTarget(input: NutritionTargetInput!): NutritionTarget!
+
+  createRecipe(input: CreateRecipeInput!): Recipe!
+  updateRecipe(id: ID!, input: UpdateRecipeInput!): Recipe!
+  deleteRecipe(id: ID!): Recipe!
+  addReview(recipeId: ID!, input: ReviewInput!): Recipe!
+
+  createMealPlan(input: MealPlanInput!): MealPlan!
+  updateMealPlan(id: ID!, input: MealPlanScheduleInput!): MealPlan!
+  submitMealPlan(id: ID!): MealPlan!
+}
+
+type User {
+  id: ID!
+  name: String!
+  email: String!
+  role: UserRole!
+  createdAt: DateTime!
+}
+
+type Subscription {
+  id: ID!
+  clientId: ID!
+  nutritionistId: ID!
+  planTier: PlanTier!
+  status: SubscriptionStatus!
+  startDate: Date!
+}
+
+type NutritionTarget {
+  clientId: ID!
+  dailyCalorieTarget: Int!
+  proteinTargetGrams: Float!
+  carbTargetGrams: Float!
+  fatTargetGrams: Float!
+}
+
+type Recipe {
+  id: ID!
+  name: String!
+  description: String
+  dietType: DietType!
+  prepSteps: [String!]!
+  createdBy: ID!
+  ingredients: [Ingredient!]!
+  macros: Macros!
+  attributes: JSON!
+  reviews: [Review!]!
+  averageRating: Float!
+  active: Boolean!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Ingredient {
+  name: String!
+  quantity: Float!
+  unit: String!
+}
+
+type Macros {
+  calories: Int!
+  proteinGrams: Float!
+  carbohydrateGrams: Float!
+  fatGrams: Float!
+}
+
+type Review {
+  userId: ID!
+  rating: Int!
+  comment: String
+  createdAt: DateTime!
+}
+
+type MealPlan {
+  id: ID!
+  clientId: ID!
+  nutritionistId: ID!
+  weekStartDate: Date!
+  days: [MealPlanDay!]!
+  status: MealPlanStatus!
+  result: MealPlanResult
+  targetComparison: TargetComparison
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  swapSuggestions(recipeId: ID!, size: Int = 20): [Recipe!]!
+}
+
+type MealPlanDay {
+  date: Date!
+  meals: [PlannedMeal!]!
+}
+
+type PlannedMeal {
+  recipeId: ID!
+  mealType: MealType!
+  recipe: Recipe
+}
+
+type MealPlanResult {
+  weeklyTotals: Macros!
+  groceryList: [Ingredient!]!
+}
+
+type TargetComparison {
+  caloriePercentageDifference: Float!
+  proteinPercentageDifference: Float!
+  carbohydratePercentageDifference: Float!
+  fatPercentageDifference: Float!
+}
+
+type ClientDashboard {
+  subscription: Subscription!
+  nutritionTarget: NutritionTarget
+  activeMealPlan: MealPlan
+}
+
+input CreateUserInput {
+  name: String!
+  email: String!
+  role: UserRole!
+}
+
+input CreateSubscriptionInput {
+  clientId: ID!
+  nutritionistId: ID!
+  planTier: PlanTier!
+  status: SubscriptionStatus!
+  startDate: Date!
+}
+
+input NutritionTargetInput {
+  clientId: ID!
+  dailyCalories: Int!
+  proteinGrams: Float!
+  carbohydrateGrams: Float!
+  fatGrams: Float!
+}
+
+input CreateRecipeInput {
+  name: String!
+  description: String
+  dietType: DietType!
+  prepSteps: [String!]!
+  createdBy: ID!
+  ingredients: [IngredientInput!]!
+  macros: MacrosInput!
+  attributes: JSON!
+}
+
+input UpdateRecipeInput {
+  name: String!
+  description: String
+  dietType: DietType!
+  prepSteps: [String!]!
+  ingredients: [IngredientInput!]!
+  macros: MacrosInput!
+  attributes: JSON!
+}
+
+input IngredientInput {
+  name: String!
+  quantity: Float!
+  unit: String!
+}
+
+input MacrosInput {
+  calories: Int!
+  proteinGrams: Float!
+  carbohydrateGrams: Float!
+  fatGrams: Float!
+}
+
+input ReviewInput {
+  userId: ID!
+  rating: Int!
+  comment: String
+}
+
+input RecipeSearchInput {
+  dietType: DietType
+  filters: [RecipeFilterInput!]
+  page: Int = 0
+  size: Int = 20
+}
+
+input RecipeFilterInput {
+  path: String!
+  operator: FilterOperator!
+  value: JSON!
+}
+
+input MealPlanInput {
+  clientId: ID!
+  nutritionistId: ID!
+  weekStartDate: Date!
+  days: [MealPlanDayInput!]!
+}
+
+input MealPlanScheduleInput {
+  weekStartDate: Date!
+  days: [MealPlanDayInput!]!
+}
+
+input MealPlanDayInput {
+  date: Date!
+  meals: [PlannedMealInput!]!
+}
+
+input PlannedMealInput {
+  recipeId: ID!
+  mealType: MealType!
+}
+
+enum UserRole {
+  CLIENT
+  NUTRITIONIST
+  ADMIN
+}
+
+enum PlanTier {
+  BASIC
+  PREMIUM
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAUSED
+  CANCELLED
+}
+
+enum DietType {
+  KETO
+  VEGAN
+  DIABETIC_FRIENDLY
+}
+
+enum MealType {
+  BREAKFAST
+  LUNCH
+  DINNER
+  SNACK
+}
+
+enum MealPlanStatus {
+  DRAFT
+  SUBMITTED
+  PROCESSING
+  PROCESSED
+  FLAGGED
+  FAILED
+}
+
+enum FilterOperator {
+  EQ
+  LT
+  LTE
+  GT
+  GTE
+}
