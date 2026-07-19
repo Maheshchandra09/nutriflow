@@ -8,6 +8,7 @@ spring:
   data:
     mongodb:
       uri: ${MONGODB_URI:mongodb://localhost:27017/nutriflow}
+      auto-index-creation: true
   graphql:
     graphiql:
       enabled: true
@@ -21,4 +22,3 @@ management:
     health:
       probes:
         enabled: true
-
