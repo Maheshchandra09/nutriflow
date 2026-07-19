@@ -36,6 +36,12 @@ public class RecipeDocument {
     private String name;
     private String description;
     private DietType dietType;
+
+    @Getter(AccessLevel.NONE)
+    private List<String> prepSteps;
+
+    private UUID createdBy;
+
     @Getter(AccessLevel.NONE)
     private List<Ingredient> ingredients;
     private Macros macros;
@@ -58,6 +64,8 @@ public class RecipeDocument {
             String name,
             String description,
             DietType dietType,
+            List<String> prepSteps,
+            UUID createdBy,
             List<Ingredient> ingredients,
             Macros macros,
             Map<String, Object> dietAttributes) {
@@ -65,6 +73,8 @@ public class RecipeDocument {
         this.name = name;
         this.description = description;
         this.dietType = dietType;
+        this.prepSteps = new ArrayList<>(prepSteps);
+        this.createdBy = createdBy;
         this.ingredients = new ArrayList<>(ingredients);
         this.macros = macros;
         this.dietAttributes = new HashMap<>(dietAttributes);
@@ -73,6 +83,10 @@ public class RecipeDocument {
         this.active = true;
         this.createdAt = Instant.now();
         this.updatedAt = createdAt;
+    }
+
+    public List<String> getPrepSteps() {
+        return List.copyOf(prepSteps);
     }
 
     public List<Ingredient> getIngredients() {
@@ -85,6 +99,35 @@ public class RecipeDocument {
 
     public List<RecipeReview> getReviews() {
         return List.copyOf(reviews);
+    }
+
+    public void update(
+            String name,
+            String description,
+            DietType dietType,
+            List<String> prepSteps,
+            List<Ingredient> ingredients,
+            Macros macros,
+            Map<String, Object> dietAttributes) {
+        this.name = name;
+        this.description = description;
+        this.dietType = dietType;
+        this.prepSteps = new ArrayList<>(prepSteps);
+        this.ingredients = new ArrayList<>(ingredients);
+        this.macros = macros;
+        this.dietAttributes = new HashMap<>(dietAttributes);
+        this.updatedAt = Instant.now();
+    }
+
+    public void addReview(RecipeReview review, BigDecimal newAverageRating) {
+        reviews.add(review);
+        averageRating = newAverageRating;
+        updatedAt = Instant.now();
+    }
+
+    public void softDelete() {
+        active = false;
+        updatedAt = Instant.now();
     }
 
 }

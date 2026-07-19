@@ -69,4 +69,16 @@ public class MealPlanDocument {
     public List<MealPlanDay> getDays() {
         return List.copyOf(days);
     }
+
+    public void replaceSchedule(LocalDate weekStartDate, List<MealPlanDay> days) {
+        this.weekStartDate = weekStartDate;
+        this.days = new ArrayList<>(days);
+        this.updatedAt = Instant.now();
+    }
+
+    public void submit(SubmissionOutboxEvent outboxEvent) {
+        this.status = MealPlanStatus.SUBMITTED;
+        this.submissionOutbox = outboxEvent;
+        this.updatedAt = Instant.now();
+    }
 }

@@ -3,9 +3,9 @@ package com.nutriflow.api.mealplan;
 import java.time.LocalDate;
 import java.util.List;
 
-public record MealPlanDay(LocalDate date, List<String> recipeIds) {
+public record MealPlanDay(LocalDate date, List<PlannedMeal> meals) {
 
     public MealPlanDay {
-        recipeIds = List.copyOf(recipeIds);
+        meals = List.copyOf(meals);
     }
 }

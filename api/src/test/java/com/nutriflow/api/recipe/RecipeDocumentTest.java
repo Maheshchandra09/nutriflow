@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class RecipeDocumentTest {
@@ -17,6 +18,8 @@ class RecipeDocumentTest {
                         "Avocado bowl",
                         "A quick lunch",
                         DietType.KETO,
+                        List.of("Slice avocado", "Assemble bowl"),
+                        UUID.randomUUID(),
                         List.of(new Ingredient("Avocado", BigDecimal.ONE, "piece")),
                         new Macros(
                                 320,

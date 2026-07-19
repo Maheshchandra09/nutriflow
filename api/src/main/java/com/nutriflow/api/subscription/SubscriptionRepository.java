@@ -12,4 +12,6 @@ public interface SubscriptionRepository extends JpaRepository<SubscriptionEntity
 
     List<SubscriptionEntity> findAllByNutritionistIdAndStatus(
             UUID nutritionistId, SubscriptionStatus status);
+
+    boolean existsByClientIdAndStatus(UUID clientId, SubscriptionStatus status);
 }

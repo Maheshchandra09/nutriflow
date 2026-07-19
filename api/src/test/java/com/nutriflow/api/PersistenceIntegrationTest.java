@@ -95,6 +95,8 @@ class PersistenceIntegrationTest {
                                 "Tofu bowl",
                                 "Plant-based dinner",
                                 DietType.VEGAN,
+                                List.of("Cook tofu", "Assemble bowl"),
+                                UUID.randomUUID(),
                                 List.of(
                                         new Ingredient(
                                                 "Tofu", new BigDecimal("200"), "g")),
