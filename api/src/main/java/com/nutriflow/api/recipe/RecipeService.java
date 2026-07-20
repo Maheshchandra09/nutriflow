@@ -15,6 +15,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
+import org.bson.types.Decimal128;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
@@ -160,8 +161,8 @@ public class RecipeService {
                 original.getDietType(),
                 minimumCalories,
                 maximumCalories,
-                minimumProtein,
-                maximumProtein,
+                new Decimal128(minimumProtein),
+                new Decimal128(maximumProtein),
                 PageRequest.of(0, boundedSize));
     }
 

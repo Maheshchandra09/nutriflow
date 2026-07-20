@@ -26,6 +26,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.bson.types.Decimal128;
 import org.springframework.data.domain.Pageable;
 
 @ExtendWith(MockitoExtension.class)
@@ -173,8 +174,8 @@ class RecipeServiceTest {
 
         service.swapSuggestions("recipe-1", 20);
 
-        ArgumentCaptor<BigDecimal> minimumProtein = ArgumentCaptor.forClass(BigDecimal.class);
-        ArgumentCaptor<BigDecimal> maximumProtein = ArgumentCaptor.forClass(BigDecimal.class);
+        ArgumentCaptor<Decimal128> minimumProtein = ArgumentCaptor.forClass(Decimal128.class);
+        ArgumentCaptor<Decimal128> maximumProtein = ArgumentCaptor.forClass(Decimal128.class);
         verify(recipeRepository)
                 .findSwapCandidates(
                         eq("recipe-1"),
@@ -184,8 +185,8 @@ class RecipeServiceTest {
                         minimumProtein.capture(),
                         maximumProtein.capture(),
                         any(Pageable.class));
-        assertThat(minimumProtein.getValue()).isEqualByComparingTo("17.00");
-        assertThat(maximumProtein.getValue()).isEqualByComparingTo("23.00");
+        assertThat(minimumProtein.getValue().bigDecimalValue()).isEqualByComparingTo("17.00");
+        assertThat(maximumProtein.getValue().bigDecimalValue()).isEqualByComparingTo("23.00");
     }
 
     private RecipeCommand ketoCommand(UUID creatorId) {

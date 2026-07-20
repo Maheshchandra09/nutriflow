@@ -28,14 +28,29 @@ Kubernetes execution.
 
 ```mermaid
 flowchart LR
-    C[GraphQL client] -->|queries and mutations| API[Spring Boot API<br/>2 replicas in kind]
-    API -->|users, subscriptions,<br/>nutrition targets| PG[(PostgreSQL)]
-    API -->|recipes, reviews,<br/>meal plans and outbox| MDB[(MongoDB)]
-    API -->|scheduled outbox dispatch| SQS[SQS queue<br/>LocalStack]
-    SQS -->|event-source mapping| L[Java 21 Lambda worker<br/>LocalStack]
-    L -->|load targets| PG
-    L -->|load plan and recipes<br/>write results/status| MDB
-    SQS -. failed after retries .-> DLQ[SQS dead-letter queue]
+    C[GraphQL client]
+
+    subgraph K8S[kind / Kubernetes]
+        API[Spring Boot GraphQL API<br/>2 replicas]
+    end
+
+    subgraph DOCKER[Docker / nutriflow network]
+        PG[(PostgreSQL)]
+        MDB[(MongoDB)]
+        SQS[SQS queue<br/>LocalStack]
+        DLQ[SQS dead-letter queue<br/>LocalStack]
+        L[Java 21 Lambda<br/>runtime container]
+    end
+
+    C -->|queries and mutations| API
+    API <-->|users, subscriptions,<br/>nutrition targets| PG
+    API -->|recipes, reviews, and<br/>plan + PENDING outbox atomically| MDB
+    MDB -->|reads and scheduled<br/>PENDING outbox scan| API
+    API -->|publish MealPlanSubmittedV1| SQS
+    SQS -->|event-source mapping| L
+    L -->|load nutrition target| PG
+    L <-->|load plan/recipes;<br/>write result and status| MDB
+    SQS -. after 3 failed receives .-> DLQ
 ```
 
 The submission and outbox event are saved atomically in one meal-plan document.
@@ -55,6 +70,7 @@ before an SQS retry.
 | `infra/localstack/` | Local SQS/DLQ initialization and Lambda deployment scripts |
 | `k8s/base/` | Reusable namespace, ConfigMap, Secret template, Deployment, and Service |
 | `k8s/local/` | Kustomize overlay that connects kind pods to Docker-hosted dependencies |
+| `scripts/` | Reusable realistic database seed workflow |
 | `compose.yml` | PostgreSQL, MongoDB, and LocalStack services with persistent volumes |
 
 PostgreSQL owns relational account and target data through Flyway migrations.
@@ -133,7 +149,20 @@ Then seed and execute the complete GraphQL → outbox → SQS → Lambda flow:
 
 The demo creates the users, subscription, targets, recipe, and seven-day plan,
 submits it, and polls until the computed nutrient summary and grocery list are
-available. Useful operational commands are:
+available.
+
+For a broader dataset with 10 users, 10 recipes, reviews, five subscriptions,
+and five meal-plan scenarios (`PROCESSED`, `FLAGGED`, `DRAFT`, and no-target),
+run:
+
+```bash
+./scripts/seed-demo.sh
+```
+
+Each seed run uses unique emails and preserves existing data. It prints useful
+client, recipe, and plan IDs for GraphiQL and database inspection.
+
+Useful operational commands are:
 
 ```bash
 kubectl -n nutriflow get deployment,pods,service

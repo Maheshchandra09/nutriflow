@@ -9,6 +9,7 @@ import com.nutriflow.api.recipe.Ingredient;
 import com.nutriflow.api.recipe.Macros;
 import com.nutriflow.api.recipe.RecipeDocument;
 import com.nutriflow.api.recipe.RecipeRepository;
+import com.nutriflow.api.recipe.RecipeService;
 import com.nutriflow.api.subscription.PlanTier;
 import com.nutriflow.api.subscription.SubscriptionEntity;
 import com.nutriflow.api.subscription.SubscriptionRepository;
@@ -50,6 +51,7 @@ class PersistenceIntegrationTest {
     @Autowired private SubscriptionRepository subscriptionRepository;
     @Autowired private NutritionTargetRepository nutritionTargetRepository;
     @Autowired private RecipeRepository recipeRepository;
+    @Autowired private RecipeService recipeService;
     @Autowired private MongoTemplate mongoTemplate;
 
     @Test
@@ -135,5 +137,42 @@ class PersistenceIntegrationTest {
                                 .getFirst()
                                 .get("quantity"))
                 .isInstanceOf(Decimal128.class);
+    }
+
+    @Test
+    void findsSwapCandidateAcrossDecimal128ProteinRange() {
+        RecipeDocument original =
+                recipeRepository.save(
+                        recipeWithMacros("Original tofu bowl", 650, "35"));
+        RecipeDocument candidate =
+                recipeRepository.save(
+                        recipeWithMacros("Tempeh alternative", 630, "34"));
+        recipeRepository.save(
+                recipeWithMacros("Low-protein alternative", 620, "20"));
+
+        assertThat(recipeService.swapSuggestions(original.getId(), 20))
+                .extracting(RecipeDocument::getId)
+                .containsExactly(candidate.getId());
+    }
+
+    private RecipeDocument recipeWithMacros(
+            String name, int calories, String proteinGrams) {
+        return new RecipeDocument(
+                null,
+                name,
+                "Swap query integration fixture",
+                DietType.VEGAN,
+                List.of("Prepare", "Serve"),
+                UUID.randomUUID(),
+                List.of(new Ingredient("Ingredient", BigDecimal.ONE, "g")),
+                new Macros(
+                        calories,
+                        new BigDecimal(proteinGrams),
+                        new BigDecimal("75"),
+                        new BigDecimal("20")),
+                Map.of(
+                        "proteinSource", "soy",
+                        "b12Fortified", false,
+                        "veganCertified", true));
     }
 }
