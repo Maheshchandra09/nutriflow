@@ -81,4 +81,15 @@ public class MealPlanDocument {
         this.submissionOutbox = outboxEvent;
         this.updatedAt = Instant.now();
     }
+
+    public boolean markOutboxSent(UUID eventId, Instant sentAt) {
+        if (submissionOutbox == null
+                || submissionOutbox.status() != OutboxStatus.PENDING
+                || !submissionOutbox.eventId().equals(eventId)) {
+            return false;
+        }
+        submissionOutbox = submissionOutbox.markSent(sentAt);
+        updatedAt = sentAt;
+        return true;
+    }
 }

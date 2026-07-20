@@ -17,7 +17,9 @@ public interface MealPlanRepository extends MongoRepository<MealPlanDocument, St
     Optional<MealPlanDocument> findFirstByClientIdAndStatusInOrderByWeekStartDateDesc(
             UUID clientId, Set<MealPlanStatus> statuses);
 
-    List<MealPlanDocument> findAllBySubmissionOutboxStatus(OutboxStatus status);
+    List<MealPlanDocument>
+            findTop100BySubmissionOutboxStatusOrderBySubmissionOutboxOccurredAtAsc(
+                    OutboxStatus status);
 
     boolean existsByDaysMealsRecipeIdAndStatusIn(
             String recipeId, Set<MealPlanStatus> statuses);

@@ -28,12 +28,21 @@
     <properties>
         <java.version>21</java.version>
         <aws-lambda-core.version>1.2.3</aws-lambda-core.version>
+        <aws-lambda-events.version>3.16.1</aws-lambda-events.version>
+        <aws-sdk.version>2.48.3</aws-sdk.version>
         <lombok.version>1.18.46</lombok.version>
         <maven-shade-plugin.version>3.6.0</maven-shade-plugin.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>bom</artifactId>
+                <version>${aws-sdk.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <dependency>
                 <groupId>com.nutriflow</groupId>
                 <artifactId>contracts</artifactId>

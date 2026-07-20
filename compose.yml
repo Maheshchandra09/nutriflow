@@ -30,17 +30,31 @@ services:
       retries: 10
 
   localstack:
-    image: localstack/localstack:4
+    image: localstack/localstack:4.0.3
     restart: unless-stopped
     environment:
       SERVICES: sqs,lambda
       AWS_DEFAULT_REGION: us-east-1
+      LAMBDA_DOCKER_NETWORK: nutriflow
     ports:
       - "4566:4566"
     volumes:
       - localstack-data:/var/lib/localstack
+      - ./infra/localstack/init-queues.sh:/etc/localstack/init/ready.d/init-queues.sh:ro
+      - ./infra/localstack/deploy-worker.sh:/opt/nutriflow/deploy-worker.sh:ro
+      - ./worker/target:/opt/nutriflow/worker:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    healthcheck:
+      test: ["CMD-SHELL", "awslocal sqs get-queue-url --queue-name meal-plan-events"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
 
 volumes:
   postgres-data:
   mongo-data:
   localstack-data:
+
+networks:
+  default:
+    name: nutriflow
