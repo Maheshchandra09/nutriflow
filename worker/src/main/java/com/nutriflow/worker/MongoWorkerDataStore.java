@@ -250,6 +250,14 @@ final class MongoWorkerDataStore
         if (value instanceof Number number) {
             return new BigDecimal(number.toString());
         }
+        if (value instanceof String text) {
+            try {
+                return new BigDecimal(text);
+            } catch (NumberFormatException exception) {
+                throw new IllegalStateException(
+                        "Expected numeric persisted value", exception);
+            }
+        }
         throw new IllegalStateException("Expected numeric persisted value");
     }
 

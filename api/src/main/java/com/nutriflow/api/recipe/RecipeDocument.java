@@ -16,6 +16,7 @@ import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
+import org.springframework.data.mongodb.core.mapping.FieldType;
 
 @Document("recipes")
 @CompoundIndexes({
@@ -50,6 +51,7 @@ public class RecipeDocument {
 
     @Getter(AccessLevel.NONE)
     private List<RecipeReview> reviews;
+    @Field(targetType = FieldType.DECIMAL128)
     private BigDecimal averageRating;
     private boolean active;
     private Instant createdAt;

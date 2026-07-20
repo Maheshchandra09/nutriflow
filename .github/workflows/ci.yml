@@ -5,9 +5,17 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      AWS_REGION: ${{ vars.AWS_REGION }}
+      ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
+      AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -17,6 +25,27 @@ jobs:
           cache: maven
       - name: Verify
         run: ./mvnw --batch-mode verify
+      - name: Render Kubernetes manifests
+        run: kubectl kustomize k8s/local > k8s-rendered.yml
+      - name: Validate Kubernetes manifests
+        uses: docker://ghcr.io/yannh/kubeconform:v0.7.0
+        with:
+          args: -strict -summary /github/workspace/k8s-rendered.yml
       - name: Build API image
         run: docker build -t nutriflow-api:${{ github.sha }} api
-
+      - name: Configure AWS credentials
+        if: github.event_name == 'push' && env.AWS_ROLE_ARN != '' && env.ECR_REPOSITORY != ''
+        uses: aws-actions/configure-aws-credentials@v6.1.2
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Log in to Amazon ECR
+        if: github.event_name == 'push' && env.AWS_ROLE_ARN != '' && env.ECR_REPOSITORY != ''
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+      - name: Push commit image to Amazon ECR
+        if: github.event_name == 'push' && env.AWS_ROLE_ARN != '' && env.ECR_REPOSITORY != ''
+        run: |
+          image="${{ steps.ecr.outputs.registry }}/${ECR_REPOSITORY}:${{ github.sha }}"
+          docker tag "nutriflow-api:${{ github.sha }}" "$image"
+          docker push "$image"

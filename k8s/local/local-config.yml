@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nutriflow-api
+data:
+  POSTGRES_URL: jdbc:postgresql://host.docker.internal:5432/nutriflow
+  MONGODB_URI: mongodb://host.docker.internal:27017/nutriflow
+  SQS_QUEUE_URL: http://host.docker.internal:4566/000000000000/meal-plan-events
+  AWS_ENDPOINT_URL: http://host.docker.internal:4566

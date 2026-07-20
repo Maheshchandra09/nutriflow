@@ -1,0 +1,12 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: nutriflow
+resources:
+  - ../base
+images:
+  - name: nutriflow-api
+    newName: nutriflow-api
+    newTag: local
+patches:
+  - path: local-config.yml
+  - path: local-deployment.yml

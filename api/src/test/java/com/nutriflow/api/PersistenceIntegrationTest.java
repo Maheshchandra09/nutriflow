@@ -22,9 +22,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
+import org.bson.Document;
+import org.bson.types.Decimal128;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -47,6 +50,7 @@ class PersistenceIntegrationTest {
     @Autowired private SubscriptionRepository subscriptionRepository;
     @Autowired private NutritionTargetRepository nutritionTargetRepository;
     @Autowired private RecipeRepository recipeRepository;
+    @Autowired private MongoTemplate mongoTemplate;
 
     @Test
     void persistsRelationalAggregatesAfterFlywayMigration() {
@@ -114,5 +118,22 @@ class PersistenceIntegrationTest {
                                 org.springframework.data.domain.PageRequest.of(0, 20)))
                 .extracting(RecipeDocument::getId)
                 .contains(recipe.getId());
+        Document persisted =
+                mongoTemplate
+                        .getCollection("recipes")
+                        .find(new Document("_id", recipe.getId()))
+                        .first();
+        assertThat(persisted).isNotNull();
+        assertThat(
+                        persisted
+                                .get("macros", Document.class)
+                                .get("proteinGrams"))
+                .isInstanceOf(Decimal128.class);
+        assertThat(
+                        persisted
+                                .getList("ingredients", Document.class)
+                                .getFirst()
+                                .get("quantity"))
+                .isInstanceOf(Decimal128.class);
     }
 }

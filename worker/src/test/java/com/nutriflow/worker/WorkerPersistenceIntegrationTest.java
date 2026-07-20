@@ -174,15 +174,9 @@ class WorkerPersistenceIntegrationTest {
                                 .append(
                                         "macros",
                                         new Document("calories", 300)
-                                                .append(
-                                                        "proteinGrams",
-                                                        decimal("20"))
-                                                .append(
-                                                        "carbohydrateGrams",
-                                                        decimal("30"))
-                                                .append(
-                                                        "fatGrams",
-                                                        decimal("10")))
+                                                .append("proteinGrams", "20")
+                                                .append("carbohydrateGrams", "30")
+                                                .append("fatGrams", "10"))
                                 .append(
                                         "ingredients",
                                         List.of(
@@ -191,7 +185,7 @@ class WorkerPersistenceIntegrationTest {
                                                                 " Spinach ")
                                                         .append(
                                                                 "quantity",
-                                                                decimal("100"))
+                                                                "100")
                                                         .append("unit", "g"))));
     }
 
